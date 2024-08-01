@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API documentation for the E-commerce application
 servers:
-  - url: http://localhost:3000
+  - url: https://ecommerce-backend01-00e0e54018da.herokuapp.com
 components:
   securitySchemes:
     cookieAuth:
@@ -30,6 +30,7 @@ components:
       required:
         - name
         - price
+        - id
     Category:
       type: object
       properties:
@@ -41,6 +42,7 @@ components:
           type: string
       required:
         - name
+        - id
     AuthResponse:
       type: object
       properties:

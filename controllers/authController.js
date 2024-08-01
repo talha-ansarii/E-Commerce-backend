@@ -1,13 +1,15 @@
-const db = require('../config/db');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const xss = require('xss');
-const { createUserSchema, loginUserSchema, updateUserSchema } = require("../schemas/userSchema");
+const db = require('../config/db'); 
+const bcrypt = require('bcrypt'); 
+const jwt = require('jsonwebtoken'); 
+const xss = require('xss'); 
+const { createUserSchema, loginUserSchema, updateUserSchema } = require("../schemas/userSchema"); // Validation schemas
 
+// Hashes the user's password with a salt round of 10
 const hashPassword = async (password) => {
   return await bcrypt.hash(password, 10);
 };
 
+// Validates and sanitizes input based on provided schema
 const validateAndSanitize = (schema, body) => {
   const result = schema.safeParse(body);
   if (!result.success) {
@@ -22,6 +24,7 @@ const validateAndSanitize = (schema, body) => {
   return { success: true, sanitizedBody };
 };
 
+// Executes a database query and returns a promise
 const queryDatabase = (query, values) => {
   return new Promise((resolve, reject) => {
     db.query(query, values, (err, results) => {
@@ -31,6 +34,7 @@ const queryDatabase = (query, values) => {
   });
 };
 
+// Handles user registration
 exports.register = async (req, res) => {
   const { success, errors, sanitizedBody } = validateAndSanitize(createUserSchema, req.body);
   if (!success) {
@@ -50,6 +54,7 @@ exports.register = async (req, res) => {
   }
 };
 
+// Handles user login
 exports.login = async (req, res) => {
   const { success, errors, sanitizedBody } = validateAndSanitize(loginUserSchema, req.body);
   if (!success) {
@@ -75,11 +80,13 @@ exports.login = async (req, res) => {
   }
 };
 
+// Handles user logout
 exports.logout = (req, res) => {
   res.clearCookie('token');
   res.json({ message: 'Logged out successfully' });
 };
 
+// Fetches the profile of the logged-in user
 exports.getProfile = async (req, res) => {
   const id = req.user.id;
   const query = 'SELECT id, username, email, created_at, role FROM users WHERE id = ?';
@@ -93,13 +100,15 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+// Handles updating users profile information by only admins
 exports.updateProfile = async (req, res) => {
   const { success, errors, sanitizedBody } = validateAndSanitize(updateUserSchema, req.body);
   if (!success) {
     return res.status(400).json({ error: 'Validation failed', ...errors });
   }
 
-  const id = req.user.id;
+  const id = req.params.id;
+
   const { username, email, password, role } = sanitizedBody;
   const fields = [];
   const values = [];

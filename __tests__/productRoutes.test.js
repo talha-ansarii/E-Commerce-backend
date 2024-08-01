@@ -22,6 +22,7 @@ app.use(bodyParser.json());
 app.use('/products', productRoutes);
 
 
+// Tests for the product routes
 describe('Prodycts API Endpoints', () => {
     afterEach(() => {
       jest.clearAllMocks();

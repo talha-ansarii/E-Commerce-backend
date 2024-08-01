@@ -20,11 +20,15 @@ const app = express();
 app.use(bodyParser.json());
 app.use('/categories', categoryRoutes);
 
+
+// Tests for the category routes
 describe('Category API Endpoints', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
+
+  // Test for GET /categories
   describe('GET /categories', () => {
     it('should return all categories', async () => {
       const mockCategories = [{ id: 1, name: 'Electronics' }, { id: 2, name: 'Books' }];
@@ -50,6 +54,8 @@ describe('Category API Endpoints', () => {
     });
   });
 
+
+  // Test for GET /categories/:id
   describe('GET /categories/:id', () => {
     it('should return a category by ID', async () => {
       const mockCategory = { id: 1, name: 'Electronics' };
@@ -75,6 +81,8 @@ describe('Category API Endpoints', () => {
     });
   });
 
+
+  // Test for POST /categories
   describe('POST /categories', () => {
     it('should create a new category', async () => {
       const mockInsertId = 1;
@@ -106,6 +114,8 @@ describe('Category API Endpoints', () => {
     });
   });
 
+
+  // Test for PUT /categories/:id
   describe('PUT /categories/:id', () => {
     it('should update an existing category', async () => {
       const mockId = 1;
@@ -142,6 +152,8 @@ describe('Category API Endpoints', () => {
     });
   });
 
+
+  // Test for DELETE /categories/:id
   describe('DELETE /categories/:id', () => {
     it('should delete a category by ID', async () => {
       db.query.mockImplementation((query, values, callback) => {

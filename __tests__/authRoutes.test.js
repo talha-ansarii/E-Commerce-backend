@@ -35,15 +35,20 @@ jest.mock('jsonwebtoken', () => ({
   sign: jest.fn(),
 }));
 
+
 const app = express();
 app.use(bodyParser.json());
 app.use('/auth', authRoutes);
 
+
+// Tests for the auth routes
 describe('User API Endpoints', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
+
+  // Test for POST /auth/register
   describe('POST /auth/register', () => {
     it('should register a new user', async () => {
       const mockInsertId = 1;
@@ -78,6 +83,8 @@ describe('User API Endpoints', () => {
     });
   });
 
+
+  // Test for POST /auth/login
   describe('POST /auth/login', () => {
     it('should log in a user with valid credentials', async () => {
       const mockUser = { id: 1, username: 'testuser', email: 'test@example.com', password_hash: 'hashedPassword' };
@@ -129,6 +136,8 @@ describe('User API Endpoints', () => {
     });
   });
 
+
+// Test for POST /auth/logout
   describe('POST /auth/logout', () => {
     it('should log out a user', async () => {
       const res = await request(app).post('/auth/logout');
@@ -138,7 +147,7 @@ describe('User API Endpoints', () => {
     });
   });
 
-
+// Test for GET /auth/profile
   describe('GET /auth/profile', () => {
     it('should return the user profile', async () => {
       const mockUser = { id: 1, username: 'testuser', email: 'test@example.com', created_at: '2021-01-01', role: 'user' };
@@ -156,7 +165,7 @@ describe('User API Endpoints', () => {
     });
   });
 
-
+// Test for PUT /auth/profile
   describe('PUT /auth/profile', () => {
     it('should update the user profile', async () => {
       const updatedUser = { username: 'updatedUser', email: 'updated@example.com' };
