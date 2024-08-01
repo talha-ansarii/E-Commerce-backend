@@ -2,6 +2,12 @@
 
 This is a RESTful API for an E-commerce application built with Node.js, Express.js, and MySQL. The API allows for the management of products, categories, and user authentication.
 
+## Deployment
+ Deployed on Heroku.
+ 
+ ```https://ecommerce-backend01-00e0e54018da.herokuapp.com ```
+
+ 
 ## Features
 
 - User Registration and Authentication
