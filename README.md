@@ -56,7 +56,7 @@ This is a RESTful API for an E-commerce application built with Node.js, Express.
 
 4. Set up the MySQL database using XAAMP:
     - Start XAAMP and create a database named `ecommerce`.
-    - Import the SQL script provided in the `config/schema.sql` file to create the necessary tables.
+    - Import the SQL script provided in the `schema.sql` file to create the necessary tables.
 
 5. Run the server:
     ```sh
