@@ -1,110 +1,131 @@
-const db = require('../config/db');
-const { createCategorySchema, updateCategorySchema} = require("../schemas/categorySchema")
-const xss = require('xss');
+const db = require('../config/db'); // Import database configuration
+const { createCategorySchema, updateCategorySchema } = require("../schemas/categorySchema"); // Import validation schemas
+const xss = require('xss'); // Import XSS sanitization library
 
-exports.getAllCategories = async (req, res) => {
+// Utility functions
 
-    const query = 'SELECT * FROM categories';
-
-    db.query(query, (err, results) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ categories: results });
-      });
-
-}
-
-
-exports.getCategoryById = async (req, res) => {
-    const { id } = req.params;
-    const query = 'SELECT * FROM categories WHERE id = ?';
-    const values = [id];
+// Execute a database query and return a promise
+const queryDatabase = (query, values = []) => {
+  return new Promise((resolve, reject) => {
     db.query(query, values, (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
-      if (results.length === 0) return res.status(404).json({ error: 'Category not found' });
-      res.json({ category: results[0]});
+      if (err) return reject(err); 
+      resolve(results); 
     });
-}
-
-
-exports.createCategory = async (req, res) => {
-    const body = req.body;
-
-    const result = createCategorySchema.safeParse(body)
-    if(!result.success){
-      const errors = result.error.format();
-      return res.status(400).json({ error: 'Validation failed', name: errors?.name?._errors || null, description: errors?.description?._errors || null});
-    }
-    const { name, description } = req.body;
-    const sanitized_name = xss(name);
-    const sanitized_description = xss(description);
-
-
-    const query = 'INSERT INTO categories (name,description) VALUES (?,?)';
-    const values = [sanitized_name, sanitized_description];
-  db.query(query, values, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ id: results.insertId, name: sanitized_name, description: sanitized_description });
   });
-}
+};
 
-
-exports.updateCategory = async (req, res) => {
-    const { id } = req.params;
-  const body = req.body;
-
-  const result = updateCategorySchema.safeParse(body)
-  if(!result.success){
-    const errors = result.error.format();
-    return res.status(400).json({ error: 'Validation failed', name: errors?.name?._errors || null, description: errors?.description?._errors || null});
+// Validate and sanitize request body
+const validateAndSanitize = (schema, body) => {
+  const result = schema.safeParse(body); 
+  if (!result.success) {
+    const errors = result.error.format(); 
+    return { success: false, errors }; 
   }
-  const { name, description } = req.body;
-  const sanitized_name = xss(name);
-  const sanitized_description = xss(description);
 
-  // Initialize the base query
-  let query = 'UPDATE categories SET ';
+  // Sanitize body to prevent XSS attacks
+  const sanitizedBody = {};
+  for (const key in body) {
+    sanitizedBody[key] = xss(body[key]);
+  }
+  return { success: true, sanitizedBody };
+};
+
+// Controller functions
+
+// Get all categories
+exports.getAllCategories = async (req, res) => {
+  const query = 'SELECT * FROM categories'; 
+  try {
+    const results = await queryDatabase(query);
+    res.json({ categories: results }); 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get a category by ID
+exports.getCategoryById = async (req, res) => {
+  const { id } = req.params; 
+  const query = 'SELECT * FROM categories WHERE id = ?'; 
+  const values = [id];
+
+  try {
+    const results = await queryDatabase(query, values); 
+    if (results.length === 0) return res.status(404).json({ error: 'Category not found' }); 
+    res.json({ category: results[0] }); 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Create a new category
+exports.createCategory = async (req, res) => {
+  const { success, errors, sanitizedBody } = validateAndSanitize(createCategorySchema, req.body);
+  if (!success) {
+    return res.status(400).json({ error: 'Validation failed', ...errors }); 
+  }
+
+  const { name, description } = sanitizedBody; 
+  const query = 'INSERT INTO categories (name, description) VALUES (?, ?)'; 
+  const values = [name, description];
+
+  try {
+    const results = await queryDatabase(query, values); 
+    res.status(201).json({ id: results.insertId, name, description }); 
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Update an existing category
+exports.updateCategory = async (req, res) => {
+  const { id } = req.params; 
+  const { success, errors, sanitizedBody } = validateAndSanitize(updateCategorySchema, req.body);
+  if (!success) {
+    return res.status(400).json({ error: 'Validation failed', ...errors }); 
+  }
+
+  const { name, description } = sanitizedBody;
+
+  let query = 'UPDATE categories SET '; // Start building the update query
   const values = [];
 
-  // Build the query dynamically
-  if (sanitized_name) {
-    query += 'name = ?, ';
-    values.push(sanitized_name);
+  if (name) {
+    query += 'name = ?, '; // Add name to query if provided
+    values.push(name);
   }
-  if (sanitized_description) {
-    query += 'description = ?, ';
-    values.push(sanitized_description);
+  if (description) {
+    query += 'description = ?, '; // Add description to query if provided
+    values.push(description);
   }
 
-  // Remove the trailing comma and space
-  query = query.slice(0, -2);
-
-  // Add the WHERE clause
-  query += ' WHERE id = ?';
+  query = query.slice(0, -2) + ' WHERE id = ?'; // Finalize the query
   values.push(id);
 
-  // Ensure there are fields to update
-  if (values.length === 1) { // Only the id is in the values array
-    return res.status(400).json({ error: 'No fields provided for update' });
+  if (values.length === 1) {
+    return res.status(400).json({ error: 'No fields provided for update' }); // Handle case where no fields are provided
   }
 
-  db.query(query, values, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.affectedRows === 0) return res.status(404).json({ error: 'Category not found' });
-    res.json({ message: 'Category updated', id: parseInt(id), name:sanitized_name, description:sanitized_description });
-  });
-}
+  try {
+    const results = await queryDatabase(query, values); 
+    if (results.affectedRows === 0) return res.status(404).json({ error: 'Category not found' }); 
+    res.json({ message: 'Category updated', id: parseInt(id), name, description }); 
+  } catch (err) {
+    res.status(500).json({ error: err.message }); 
+  }
+};
 
+// Delete a category
+exports.deleteCategory = async (req, res) => {
+  const { id } = req.params; 
+  const query = 'DELETE FROM categories WHERE id = ?'; 
+  const values = [id];
 
-exports.deleteCategory = async(req, res) => {
-    const { id } = req.params;
-
-    const query = 'DELETE FROM categories WHERE id = ?';
-   const values = [id];
-  db.query(query, values, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    if (results.affectedRows === 0) return res.status(404).json({ error: 'Category not found' });
-    res.json({ message: 'Category deleted successfully' });
-  });
-}
-
-
+  try {
+    const results = await queryDatabase(query, values); 
+    if (results.affectedRows === 0) return res.status(404).json({ error: 'Category not found' }); 
+    res.json({ message: 'Category deleted successfully' }); 
+  } catch (err) {
+    res.status(500).json({ error: err.message }); 
+  }
+};
