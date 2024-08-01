@@ -43,7 +43,7 @@ exports.createCategory = async (req, res) => {
     const values = [sanitized_name, sanitized_description];
   db.query(query, values, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.status(201).json({ id: results.insertId, sanitized_name, sanitized_description });
+    res.status(201).json({ id: results.insertId, name: sanitized_name, description: sanitized_description });
   });
 }
 
@@ -90,7 +90,7 @@ exports.updateCategory = async (req, res) => {
   db.query(query, values, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
     if (results.affectedRows === 0) return res.status(404).json({ error: 'Category not found' });
-    res.json({ message: 'Category updated', id: parseInt(id), sanitized_name, sanitized_description });
+    res.json({ message: 'Category updated', id: parseInt(id), name:sanitized_name, description:sanitized_description });
   });
 }
 

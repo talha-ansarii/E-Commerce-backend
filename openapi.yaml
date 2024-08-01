@@ -1,0 +1,524 @@
+openapi: 3.0.0
+info:
+  title: E-commerce API
+  version: 1.0.0
+  description: API documentation for the E-commerce application
+servers:
+  - url: http://localhost:3000
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: authToken
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        category_id:
+          type: integer
+      required:
+        - name
+        - price
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        token:
+          type: string
+      required:
+        - message
+        - token
+security:
+  - cookieAuth: []
+paths:
+  paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user account.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              username: "new_user"
+              email: "new_user@example.com"
+              password: "securepassword"
+              role: "user"
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: integer
+              example:
+                message: "Account created!"
+                id: 1
+        '400':
+          description: Validation failed
+        '500':
+          description: Internal server error
+  /auth/login:
+    post:
+      summary: Log in a user
+      description: Authenticate a user and return a JWT token.
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+            example:
+              email: "user@example.com"
+              password: "securepassword"
+      responses:
+        '200':
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+              example:
+                message: "Logged in successfully"
+        '400':
+          description: Validation failed
+        '401':
+          description: Invalid credentials
+        '404':
+          description: User not found
+        '500':
+          description: Internal server error
+  /auth/logout:
+    post:
+      summary: Log out a user
+      description: Log out the currently authenticated user.
+      tags: [Auth]
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Logged out successfully"
+  /auth/profile:
+    get:
+      summary: Get user profile
+      description: Retrieve the profile of the currently authenticated user.
+      tags: [Auth]
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                user:
+                  id: 1
+                  username: "user"
+                  email: "user@example.com"
+                  created_at: "2021-01-01T00:00:00.000Z"
+                  role: "user"
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+    put:
+      summary: Update user profile
+      description: Update the profile of the currently authenticated user.
+      tags: [Auth]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              username: "updated_user"
+              email: "updated_user@example.com"
+              password: "newsecurepassword"
+              role: "admin"
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Profile updated successfully"
+        '400':
+          description: Validation failed
+        '401':
+          description: Unauthorized
+        '500':
+          description: Internal server error
+  /products:
+    get:
+      summary: Retrieve all products
+      description: Retrieve a list of all available products.
+      tags: [Products]
+      responses:
+        '200':
+          description: A list of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+              example:
+                - id: 1
+                  name: "Sample Product 1"
+                  description: "This is a sample product"
+                  price: 100
+                  stock: 50
+                  category_id: 1
+                - id: 2
+                  name: "Sample Product 2"
+                  description: "This is another sample product"
+                  price: 150
+                  stock: 30
+                  category_id: 2
+        '500':
+          description: Internal server error
+    post:
+      summary: Create a new product
+      description: Add a new product to the inventory. Only accessible by admins.
+      tags: [Products]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+            example:
+              name: "New Product"
+              description: "This is a new product"
+              price: 200
+              stock: 100
+              categoryName: "Electronics"
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              example:
+                message: "Product created!"
+                id: 3
+          '400':
+            description: Invalid request body
+        '401':
+          description: Not logged in 
+        '403':
+          description: Forbidden, only admins can create products
+  /products/{id}:
+    get:
+      summary: Get a product by ID
+      description: Retrieve details of a specific product by its ID.
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: The product ID
+      responses:
+        '200':
+          description: A product object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              example:
+                id: 1
+                name: "Sample Product 1"
+                description: "This is a sample product"
+                price: 100
+                stock: 50
+                category_id: 1
+        '404':
+          description: Product not found
+        '500':
+          description: Internal server error
+    put:
+      summary: Update a product by ID
+      description: Update details of a specific product by its ID. Only accessible by admins.
+      tags: [Products]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: The product ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+            example:
+              name: "Updated Product"
+              description: "This is an updated product description"
+              price: 150
+              stock: 60
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              example:
+                message: "Product updated"
+                id: 1
+                name: "Updated Product"
+                description: "This is an updated product description"
+                price: 150
+                stock: 60
+        '401':
+          description: Not logged in
+        '403':
+          description: Forbidden, only admins can update products
+        '404':
+          description: Product not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete a product by ID
+      description: Remove a product from the inventory by its ID. Only accessible by admins.
+      tags: [Products]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: The product ID
+      responses:
+        '200':
+          description: Product deleted
+           content:
+            application/json:
+              example:
+                message: "Product deleted"
+        '401':
+          description: Not logged in
+        '403':
+          description: Forbidden, only admins can delete products
+        '404':
+          description: Product not found
+        '500':
+          description: Internal server error
+  /categories:
+    get:
+      summary: Retrieve all categories
+      description: Retrieve a list of all available categories.
+      tags: [Categories]
+      responses:
+        '200':
+          description: A list of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+              example:
+                - id: 1
+                  name: "Electronics"
+                  description: "Electronic devices and accessories"
+                  created_at: "2021-01-01T00:00:00.000Z"
+                - id: 2
+                  name: "Clothing"
+                  description: "Clothes and accessories"
+                  created_at: "2021-01-01T00:00:00.000Z"
+    post:
+      summary: Create a new category
+      description: Add a new category. Only accessible by admins.
+      tags: [Categories]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+            example:
+              name: "Books"
+              description: "Books and literature"
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+              example:
+                id: 3
+                name: "Books"
+                description: "Books and literature"
+        '401':
+          description: Not logged in
+        '403':
+          description: Forbidden, only admins can create categories
+  /categories/{id}:
+    get:
+      summary: Get a category by ID
+      description: Retrieve details of a specific category by its ID.
+      tags: [Categories]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: The category ID
+      responses:
+        '200':
+          description: A category object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+              example:
+                category:
+                  id: 1
+                  name: "Electronics"
+                  description: "Electronic devices and accessories"
+                  created_at: "2021-01-01T00:00:00.000Z"
+        '404':
+          description: Category not found
+        '500':
+          description: Internal server error
+    put:
+      summary: Update a category by ID
+      description: Update details of a specific category by its ID. Only accessible by admins.
+      tags: [Categories]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: The category ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+            example:
+              name: "Updated Category"
+              description: "Updated category description"
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+              example:
+                message: "Category updated"
+                id: 1
+                name: "Updated Category"
+                description: "Updated category description"
+        '401':
+          description: Not logged in
+        '403':
+          description: Forbidden, only admins can update categories
+        '404':
+          description: Category not found
+        '500':
+          description: Internal server error
+    delete:
+      summary: Delete a category by ID
+      description: Remove a category from the list by its ID. Only accessible by admins.
+      tags: [Categories]
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: The category ID
+      responses:
+        '200':
+          description: 
+            message: "Category deleted successfully"
+        '401':
+          description: Not logged in
+        '403':
+          description: Forbidden, only admins can delete categories
+        '404':
+          description: Category not found
+        '500':
+          description: Internal server error

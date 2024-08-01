@@ -20,7 +20,9 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.0",
+    "swagger-ui-express": "^5.0.1",
     "xss": "^1.0.15",
+    "yamljs": "^0.3.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -7,13 +7,14 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 require('dotenv').config();
+const setupSwagger = require('./swagger');
 
 const app = express();
-
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
 
+setupSwagger(app);
 app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
 app.use('/categories', categoryRoutes);

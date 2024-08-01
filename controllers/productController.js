@@ -122,7 +122,7 @@ exports.updateProduct = (req, res) => {
     db.query(query, values, (err, results) => {
       if (err) return res.status(500).json({ error: err.message });
       if (results.affectedRows === 0) return res.status(404).json({ error: 'Product not found' });
-      res.json({ message: 'Product updated', id, name, description, price, stock });
+      res.json({ message: 'Product updated', id, name:sanitized_name, description:sanitized_description, price:sanitized_price, stock:sanitized_stock });
     });
 };
 
