@@ -87,7 +87,7 @@ exports.getProfile = async (req, res) => {
 
     db.query(query, values , (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
-            res.status(201).json({ user: results[0] });
+            res.status(200).json({ user: results[0] });
           });
   
 };
@@ -148,7 +148,7 @@ exports.updateProfile = async (req, res) => {
 
     db.query(query, values , (err, results) => {
       if (err) return res.status(500).json({ error: err.message });
-      res.status(201).json({ message: 'Profile updated successfully' });
+      res.status(200).json({ message: 'Profile updated successfully' });
     });
 
    
