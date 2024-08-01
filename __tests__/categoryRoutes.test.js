@@ -91,8 +91,8 @@ describe('Category API Endpoints', () => {
       expect(res.statusCode).toEqual(201);
       expect(res.body).toEqual({
         id: mockInsertId,
-        sanitized_name: newCategory.name,
-        sanitized_description: newCategory.description
+        name: newCategory.name,
+        description: newCategory.description
       });
     });
 
@@ -123,8 +123,8 @@ describe('Category API Endpoints', () => {
       expect(res.body).toEqual({
         message: 'Category updated',
         id: mockId,
-        sanitized_name: updatedCategory.name,
-        sanitized_description: updatedCategory.description
+        name: updatedCategory.name,
+        description: updatedCategory.description
       });
     });
 

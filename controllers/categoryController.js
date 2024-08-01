@@ -34,13 +34,12 @@ const validateAndSanitize = (schema, body) => {
 
 // Get all categories
 exports.getAllCategories = async (req, res) => {
-  const query = 'SELECT * FROM categories'; 
-  try {
-    const results = await queryDatabase(query);
-    res.json({ categories: results }); 
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const query = 'SELECT * FROM categories';
+
+    db.query(query, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ categories: results });
+      });
 };
 
 // Get a category by ID

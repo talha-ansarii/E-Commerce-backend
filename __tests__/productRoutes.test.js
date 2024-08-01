@@ -147,7 +147,7 @@ describe('Prodycts API Endpoints', () => {
       const updatedProduct = {
         name: 'Updated Product',
         description: 'Updated description',
-        price: 199.99,
+        price: 199,
         stock: 20
       };
 
