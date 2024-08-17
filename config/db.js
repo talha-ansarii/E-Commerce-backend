@@ -3,11 +3,11 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 const connection = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-  port: process.env.DB_PORT
+  host: process.env.DB_HOST || "sql.freedb.tech",
+  user: process.env.DB_USER || "freedb_user-talha",
+  password: process.env.DB_PASS || "UYmSg54w%2CX%wn",
+  database: process.env.DB_NAME || "freedb_ecommerce-app",
+  port: process.env.DB_PORT || 3306
 });
 
 connection.connect((err) => {
