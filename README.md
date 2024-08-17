@@ -3,9 +3,9 @@
 This is a RESTful API for an E-commerce application built with Node.js, Express.js, and MySQL. The API allows for the management of products, categories, and user authentication.
 
 ## Deployment
- Deployed on Heroku.
+ Deployed on Railway.
  
- ```https://ecommerce-backend01-00e0e54018da.herokuapp.com ```
+ ```https://web-production-3594.up.railway.app```
 
  
 ## Features
@@ -26,7 +26,7 @@ This is a RESTful API for an E-commerce application built with Node.js, Express.
 - JWT
 - xss
 - Jest (for testing)
-- Swagger (OpenAPI) for API documentation ```https://ecommerce-backend01-00e0e54018da.herokuapp.com/api-docs```
+- Swagger (OpenAPI) for API documentation ```https://web-production-3594.up.railway.app/api-docs```
 
 ## Setup and Installation
 
